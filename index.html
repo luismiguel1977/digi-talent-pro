@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#00d2ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>Entrevistas D2D</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="src/css/app.css">
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Error Handling -->
+    <script>
+        window.onerror = function(msg, url, line) {
+            console.error('Error: ' + msg);
+            document.body.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: red;">
+                    <h2>Error de Carga</h2>
+                    <p>${msg}</p>
+                    <button onclick="location.reload()">Reintentar</button>
+                </div>
+            `;
+            return false;
+        };
+    </script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Content Area -->
+        <div id="app" class="app-content">
+
+            <!-- SCREEN: HOME -->
+            <div id="screen-home" class="screen active">
+                <div class="mobile-header">
+                    <h1>📡 Entrevistas D2D</h1>
+                    <p>Evaluación Comercial D2D</p>
+                </div>
+
+                <div class="hero-section">
+                    <div class="hero-icon">📊</div>
+                    <h2>Evaluación Profesional</h2>
+                    <p>Sistema de evaluación por competencias para equipos de venta puerta a puerta</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="app.startNewEvaluation()">
+                    🚀 Nueva Evaluación
+                </button>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Metodología STAR</h3>
+                        <p>Evaluación basada en situaciones reales</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>Inteligente</h3>
+                        <p>Preguntas adaptativas según experiencia</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN: EVALUATION FORM -->
+            <div id="screen-evaluation-form" class="screen">
+                <div class="mobile-header">
+                    <button class="mobile-back" onclick="app.showScreen('home')">←</button>
+                    <h1>Nueva Evaluación</h1>
+                </div>
+
+                <button class="btn btn-icebreaker" onclick="app.showIcebreaker()">
+                    🧊 Pregunta Rompehielos (Aleatoria)
+                </button>
+
+                <form id="evaluationForm" class="mobile-form">
+                    <div class="form-group">
+                        <label>👤 Nombre completo *</label>
+                        <input type="text" name="name" placeholder="María García López" required>
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <label>💼 Experiencia del candidato *</label>
+                        <select name="hasExperience" id="hasExperience" onchange="app.toggleExperience()">
+                            <option value="">Selecciona experiencia</option>
+                            <option value="no">Venta D2D - Sin experiencia (Rookie)</option>
+                            <option value="yes">Venta D2D - Con experiencia</option>
+                            <option value="other">Venta en otros sectores</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group hidden" id="experienceDetails">
+                        <label>Nivel de experiencia *</label>
+                        <select name="experienceLevel">
+                            <option value="">Selecciona nivel</option>
+                            <option value="junior">Menos de 1 año</option>
+                            <option value="mid">1-3 años</option>
+                            <option value="senior">Más de 3 años</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📍 Zona geográfica *</label>
+                        <input type="text" name="zone" placeholder="Madrid Centro, Barcelona..." required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Comenzar Evaluación →
+                    </button>
+                </form>
+            </div>
+
+            <!-- SCREEN: RATING LEGEND -->
+            <div id="screen-rating-legend" class="screen">
+                <div class="mobile-header">
+                    <h1>📊 Escala de Evaluación</h1>
+                    <p>Qué significan las notas 1-5</p>
+                </div>
+
+                <div class="legend-card">
+                    <div class="legend-item"><span class="n">1</span> <strong>Muy Deficiente:</strong> Actitud negativa
+                        o falta total de aptitud.</div>
+                    <div class="legend-item"><span class="n">2</span> <strong>Deficiente:</strong> No muestra interés o
+                        habilidades básicas.</div>
+                    <div class="legend-item"><span class="n">3</span> <strong>Regular:</strong> Cumple, pero sin brillo
+                        ni iniciativa.</div>
+                    <div class="legend-item"><span class="n">4</span> <strong>Bueno:</strong> Muestras claras de talento
+                        y buena actitud.</div>
+                    <div class="legend-item"><span class="n">5</span> <strong>Excelente:</strong> Perfil top, gran
+                        capacidad y energía.</div>
+                </div>
+
+                <button class="btn btn-primary" onclick="app.startQuestionsSequence()">
+                    Entendido, empezar →
+                </button>
+            </div>
+
+            <!-- SCREEN: EVALUATION QUESTIONS -->
+            <div id="screen-questions" class="screen">
+                <div class="mobile-header">
+                    <button class="mobile-back" onclick="app.confirmExit()">←</button>
+                    <h1 id="questionHeader">Pregunta 1/5</h1>
+                </div>
+
+                <div id="questionContainer">
+                    <!-- Questions injected here -->
+                </div>
+
+                <div class="question-controls">
+                    <button class="btn btn-secondary" onclick="app.prevQuestion()" id="btnPrev">Anterior</button>
+                    <button class="btn btn-primary" onclick="app.nextQuestion()" id="btnNext">Siguiente</button>
+                </div>
+            </div>
+
+            <!-- SCREEN: REMOTE OBSERVATION -->
+            <div id="screen-observation" class="screen">
+                <div class="mobile-header">
+                    <h1>📡 Observación Digital</h1>
+                    <p>Checklist de profesionalidad remota</p>
+                </div>
+
+                <div class="observation-form">
+                    <div class="obs-item">
+                        <label class="obs-label">
+                            <input type="checkbox" id="obs_punctuality">
+                            <span>⏱️ Puntualidad Digital</span>
+                        </label>
+                        <small>¿Entró a la hora correcta?</small>
+                    </div>
+                    <div class="obs-item">
+                        <label class="obs-label">
+                            <input type="checkbox" id="obs_environment">
+                            <span>🏠 Entorno/Fondo Pro</span>
+                        </label>
+                        <small>¿Fondo ordenado y sin ruidos?</small>
+                    </div>
+                    <div class="obs-item">
+                        <label class="obs-label">
+                            <input type="checkbox" id="obs_tech">
+                            <span>💻 Setup Técnico OK</span>
+                        </label>
+                        <small>¿Buena conexión, audio y cámara?</small>
+                    </div>
+                    <div class="obs-item">
+                        <label class="obs-label">
+                            <input type="checkbox" id="obs_image">
+                            <span>👔 Imagen en Cámara</span>
+                        </label>
+                        <small>¿Viste adecuadamente?</small>
+                    </div>
+                    <div class="obs-item">
+                        <label class="obs-label">
+                            <input type="checkbox" id="obs_eyeContact">
+                            <span>👀 Contacto Visual</span>
+                        </label>
+                        <small>¿Mira a la cámara, no al móvil?</small>
+                    </div>
+
+                    <button class="btn btn-primary" style="margin-top: 20px" onclick="app.finishObservation()">
+                        Siguiente: Test de Coachability →
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN: COACHABILITY TEST -->
+            <div id="screen-coachability" class="screen">
+                <div class="mobile-header">
+                    <h1>🧪 Test de Coachability</h1>
+                </div>
+
+                <div class="coach-test-card">
+                    <div class="test-instruction">
+                        <h3>⚠️ Instrucción para el Supervisor:</h3>
+                        <p>Dale ahora mismo un feedback constructivo o técnico al candidato.</p>
+                        <p><em>Ejemplo: "No te escucho con suficiente energía" o "¿Podrías encuadrarte mejor la
+                                cámara?"</em></p>
+                    </div>
+
+                    <h3>¿Cómo reaccionó?</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-success" onclick="app.finishCoachability('positive')">
+                            ✅ Acepta y corrige al momento
+                        </button>
+
+                        <button class="btn btn-secondary" onclick="app.finishCoachability('neutral')">
+                            😐 Indiferente / Se bloquea
+                        </button>
+
+                        <button class="btn btn-danger" onclick="app.finishCoachability('negative')"
+                            style="background: var(--danger); color: white;">
+                            ❌ Se defiende / Pone excusas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN: RESULTS -->
+            <div id="screen-results" class="screen">
+                <div class="mobile-header">
+                    <button class="mobile-back" onclick="app.showScreen('home')">🏠</button>
+                    <h1>Resultados</h1>
+                </div>
+
+                <div class="results-card">
+                    <div class="score-circle-container">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="#eee" stroke-width="12" />
+                            <circle id="scoreCircle" cx="60" cy="60" r="54" fill="none" stroke="#00d2ff"
+                                stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="339.292"
+                                transform="rotate(-90 60 60)" />
+                        </svg>
+                        <div class="score-text">
+                            <span id="finalScore">0</span>
+                            <small>/100</small>
+                        </div>
+                    </div>
+
+                    <h2 id="verdictTitle">Evaluando...</h2>
+                    <p id="verdictText">...</p>
+                </div>
+
+                <div class="action-buttons">
+
+                    <button class="btn btn-secondary" onclick="app.shareResults()">📤 Compartir</button>
+                    <button class="btn btn-primary" onclick="app.showScreen('home')">Finalizar</button>
+                </div>
+            </div>
+
+            <!-- SCREEN: EVALUATIONS LIST -->
+            <div id="screen-evaluations" class="screen">
+                <div class="mobile-header">
+                    <h1>Informe Detallado</h1>
+                </div>
+                <div id="evaluationsList" class="evaluations-list">
+                    <!-- List items injected here -->
+                </div>
+            </div>
+
+            <!-- SCREEN: EVALUATION DETAIL -->
+            <div id="screen-eval-detail" class="screen">
+                <div class="mobile-header">
+                    <button class="mobile-back" onclick="app.showScreen('evaluations')">←</button>
+                    <h1>Informe Detallado</h1>
+                </div>
+                <div id="evalDetailContent" class="eval-detail-content">
+                    <!-- Detailed report content injected here -->
+                </div>
+            </div>
+
+
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="app.showScreen('home')" data-screen="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Inicio</span>
+            </button>
+            <button class="nav-item" onclick="app.showScreen('evaluations')" data-screen="evaluations">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Informes</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module" src="src/js/app.js"></script>
+</body>
+
+</html>
